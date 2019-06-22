@@ -1,0 +1,113 @@
+setwd("C:/Users/WAVE PC/Desktop/Dictado de Cursos/Prima AFP/2.Clase 2/DataSet")
+rm(list=ls()) #
+library(readr)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(ISLR)
+library(foreign)
+library(readr)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(ISLR)
+library(foreign)
+data <- read.csv("Advertising.csv") ## Cargar la data
+View(data)
+str(data) # ver la estructura de la data
+# Analisis Univariado de la data
+summary(data) # estadicas resumen de la data
+boxplot(data[,2:5]) # grafico de cajas
+cor(data$TV,data$radio)
+cor(data$TV,data$radio,method = "spearman")
+# Analisis Bivariado de la data
+correlacion<-cor(data[,2:5],method = "spearman")
+View(correlacion)
+write.csv(correlacion,"correlacion.csv")
+library(corrplot)
+corrplot(correlacion, method="number", type="upper")
+library("PerformanceAnalytics")
+chart.Correlation(data[,2:5], histogram=TRUE, pch=19)
+library(psych)
+pairs.panels(data[,2:5], scale=TRUE)
+library(corrplot)
+corrplot.mixed(cor(data[,2:5]), order="hclust", tl.col="black")
+library(GGally)
+ggpairs(data[,2:5])
+# Ajustamos un modelo lineal entre las ventas y el monto invertido en publicidad por TV
+m <- lm(sales ~ TV, data)
+# Vemos un resumen del modelo
+summary(m)
+# Predecir sobre nuevos registros
+x_nuevos<-data.frame(TV=c(45,1000))
+View(x_nuevos)
+predict(m,x_nuevos)
+# Obtenemos los valores ajustados o predichos
+data$fitted <- m$fitted.values
+# Podemos ver tambiÃ©n los residuales
+data$residual <- m$residuals
+View(data)
+ggplot(data = data, aes(x = TV, y = sales)) + geom_point(color = "red") +
+geom_line(aes(y = fitted), color = "blue") +
+geom_segment(aes(x = TV, xend = TV, y = sales, yend = fitted, color="Distancia"), color = "grey80") +
+labs(xlab = "Presupuesto para TV", ylab = "Ventas") +
+theme_bw()
+# Ajustamos un modelo lineal entre las ventas y el monto invertido en publicidad por TV
+mm <- lm(sales ~ TV+radio, data = data)
+# Vemos un resumen del modelo
+summary(mm)
+# Obtenemos los valores ajustados o predichos
+data$fittedmm <- mm$fitted.values
+# Podemos ver tambiÃ©n los residuales
+data$residualmm <- mm$residuals
+ggplot(data = data, aes(x = TV, y = sales)) + geom_point(color = "red") +
+geom_line(aes(y = fittedmm), color = "blue") +
+geom_segment(aes(x = TV, xend = TV, y = sales, yend = fittedmm, color="Distancia"), color = "grey80") +
+labs(xlab = "Presupuesto para TV", ylab = "Ventas") +
+theme_bw()
+plot(data$residual)
+plot(data$fitted,data$residual)
+cars1 <- cars[1:30, ]  # original data
+cars_outliers <- data.frame(speed=c(19,19,20,20,20), dist=c(190, 186, 210, 220, 218))  # introduce outliers.
+cars2 <- rbind(cars1, cars_outliers)
+cars.compare <- rbind(
+mutate(cars1, base = "sin.outliers"), mutate(cars2, base = "con.outliers")
+)
+ggplot(cars.compare, aes(x = speed, y = dist)) + geom_point() + facet_wrap(~ base) +
+geom_smooth(method = 'lm')
+carros <- read.csv("carros2011imputado2.csv")
+set.seed(1234) #semilla aleatoria
+sample <- sample.int(nrow(carros), round(.8*nrow(carros)))
+sample
+set.seed(1234) #semilla aleatoria
+sample <- sample.int(nrow(carros), round(.8*nrow(carros)))
+carros.train<- carros[sample, ]
+carros.validation <- carros[-sample, ]
+precio.train=as.matrix(carros.train$precio_promedio)
+predictores.train=as.matrix(carros.train[,2:17])
+precio.validation=as.matrix(carros.validation$precio_promedio)
+predictores.validation=as.matrix(carros.validation[,2:17])
+library(glmnet)
+fitridge=glmnet(predictores.train,precio.train,alpha=0)
+fitridge$beta
+plot(fitridge)
+foundrigde=cv.glmnet(predictores.train,precio.train,alpha=0,nfolds=5)
+plot(foundrigde)
+foundrigde$lambda.1se # muestra el landa optimo sugerencia
+foundrigde$lambda.min
+coef(fitridge,s=foundrigde$lambda.1se)
+coef(fitridge,s=foundrigde$lambda.min)
+prediridge=predict(foundrigde,predictores.validation,s="lambda.min")
+ridgemse=sqrt(mean((prediridge-precio.validation)^2))
+ridgemse
+fitlasso=glmnet(predictores.train,precio.train,alpha=1)## aplha 1 es cambiar la norma con la 1
+## Encontrar los mejores coeff
+founlasso=cv.glmnet(predictores.train,precio.train,alpha=1,nfolds=5)
+plot(founlasso)
+founlasso$lambda.1se # muestra el landa optimo sugerencia
+founlasso$lambda.min
+predilasso=predict(founlasso,predictores.validation,s="lambda.min")
+lassomse=sqrt(mean((predilasso-precio.validation)^2))
+lassomse
+coef(fitlasso,s=founlasso$lambda.1se)
+coef(fitlasso,s=founlasso$lambda.min)

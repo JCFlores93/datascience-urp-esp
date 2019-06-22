@@ -1,0 +1,1 @@
+rm(list = ls()) # Borra lo guardadoen memoria
