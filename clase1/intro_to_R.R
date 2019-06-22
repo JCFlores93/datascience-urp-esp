@@ -30,3 +30,4 @@ data[c(1, 3), 2]
 
 #usar librería
 library(neuralnet)
+
