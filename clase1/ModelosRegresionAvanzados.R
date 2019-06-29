@@ -39,16 +39,15 @@ library(foreign)
 data <- read.csv("Advertising.csv") ## Cargar la data
 str(data) # ver la estructura de la data
 View(data)
-
 # Analisis Univariado de la data
 summary(data) # Tabla resumen
 boxplot(data[,2:5]) # gráfico de cajas
 cor(data$TV,data$radio) # por defecto utiliza pearson
 cor(data$TV,data$radio, method = 'spearman') # correlacion de spearman , si es similiar significa que tiende a ser una distribucion normal
 #Si no supera al 0.6, puede ir al modelo
-
 # Analisis Bivariado de la data
 correlacion<-cor(data[,2:5], method = 'spearman') # Calculando las matrices de correlaciones.
+# Usamos el metodo de spearman para evitar el supuesto de normalidad(no paramétrica).
 # Las correlaciones no deben superar 0.6, en las Xs
 # Si superan al 0.6, se toma la que tenga mayor correlacion con el target
 library(corrplot)
@@ -199,20 +198,34 @@ plot(m)
 ## Cargar la data
 
 carros <- read.csv("carros2011imputado2.csv")
+str(carros)
+#Objetivo modelar el precio promedio del auto.
+matrizcorrelacion <- cor(carros[, 2:17], method = 'spearman') # Escogemos sólo las variables cuantitativas, y sin el ID.
+write.csv(matrizcorrelacion, "matriz_carros_correlacion.csv")
 
 ## modelo Regresion Ridge
 
-## Particion Muestral
-
+## Particion Muestral (train 80% y test 20%)
 set.seed(1234) 
+# sample.int -> asigna un número entero
+# nrow(carros) -> número total de registros
+# .8*nrow(carros) -> 80% de la data
 sample <- sample.int(nrow(carros), round(.8*nrow(carros)))
+# Asignamos el 80% de la data en train
+# Guardamos la data en matriz
 carros.train<- carros[sample, ]
+# Asignamos el 20% de la data en validation/train
+# Guardamos la data en matriz
 carros.validation <- carros[-sample, ]
 
+# x train 
 precio.train=as.matrix(carros.train$precio_promedio)
+# x test
 predictores.train=as.matrix(carros.train[,2:17])
 
+# y train
 precio.validation=as.matrix(carros.validation$precio_promedio)
+# y test
 predictores.validation=as.matrix(carros.validation[,2:17])
 
 library(glmnet)
