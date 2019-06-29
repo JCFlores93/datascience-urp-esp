@@ -232,12 +232,15 @@ library(glmnet)
 
 ## Modelado
 
+# alpha=0 -> es ridge
 fitridge=glmnet(predictores.train,precio.train,alpha=0)
 fitridge$beta
 plot(fitridge) # las q se alejan mas son las mas importantes
 
 ## Encontrar los mejores coeff
-
+# cv -> cross validation 
+# glmnet -> penalizacion
+# nfolds -> cantida de pruebas
 foundrigde=cv.glmnet(predictores.train,precio.train,alpha=0,nfolds=5)
 plot(foundrigde) # con landa de log de 0 a 2 se estabiliza
 attributes(foundrigde)
@@ -245,45 +248,60 @@ foundrigde$lambda
 foundrigde$lambda.1se # muestra el landa optimo sugerencia
 foundrigde$lambda.min 
 
-coef(fitridge,s=foundrigde$lambda.1se)
+coef(fitridge,s=foundrigde$lambda.1se) # Muestra los coeficintes para cada lambda
 coef(fitridge,s=foundrigde$lambda.min)
 
 ## Indicadores
-
+# El menor error es mejor.
+#Estamos prediciendo en base al lambda del negocio
 prediridge=predict(foundrigde,predictores.validation,s="lambda.min")
 ridgemse=sqrt(mean((prediridge-precio.validation)^2))
 ridgemse
 
+#Estamos prediciendo en base al lambda optimo
+prediridge1=predict(foundrigde,predictores.validation,s="lambda.1se")
+ridgemse1=sqrt(mean((prediridge1-precio.validation)^2))
+ridgemse1
+
 ## modelo Regresion Lasso
 
-fitlasso=glmnet(predictores.train,precio.train,alpha=1)## aplha 1 es cambiar la norma con la 1
+## aplha 1 es cambiar la norma con la 1
+fitlasso=glmnet(predictores.train,precio.train,alpha=1)
 
 ## Encontrar los mejores coeff
 
 founlasso=cv.glmnet(predictores.train,precio.train,alpha=1,nfolds=5) 
 plot(founlasso)
 founlasso$lambda.1se # muestra el landa optimo sugerencia
-founlasso$lambda.min 
+founlasso$lambda.min # muestra el landa de negocio
 
+# Cuando se muestre un punto significa que se ha eliminado
 coef(fitlasso,s=founlasso$lambda.1se)
 coef(fitlasso,s=founlasso$lambda.min)
 
 ## Indicadores
 
+# Lambda de negocio
 predilasso=predict(founlasso,predictores.validation,s="lambda.min")
 lassomse=sqrt(mean((predilasso-precio.validation)^2))
 lassomse
 
+# Lambda optimo
+predilasso1=predict(founlasso,predictores.validation,s="lambda.1se")
+lassomse1=sqrt(mean((predilasso1-precio.validation)^2))
+lassomse1
+
 ## modelo Regresion mediante redes elasticas
 
-fitnet=glmnet(predictores.train,precio.train,alpha=0.5)## aplha 0.5 es cambiar la norma con la 0.5
+## aplha 0.5 es cambiar la norma con la 0.5
+fitnet=glmnet(predictores.train,precio.train,alpha=0.5)
 
 ## Encontrar los mejores coeff
 
 founnet=cv.glmnet(predictores.train,precio.train,alpha=0.5,nfolds=5) 
 plot(founnet)
-founnet$lambda.1se # muestra el landa optimo sugerencia
-founnet$lambda.min 
+founnet$lambda.1se # muestra el lambda optimo sugerencia
+founnet$lambda.min # muestra el lambda de negocio
 
 coef(fitnet,s=founnet$lambda.1se)
 coef(fitnet,s=founnet$lambda.min)
@@ -294,6 +312,11 @@ predinet=predict(founnet,predictores.validation,s="lambda.min")
 netmse=sqrt(mean((predinet-precio.validation)^2))
 netmse
 
+predinet1=predict(founnet,predictores.validation,s="lambda.min")
+netmse1=sqrt(mean((predinet1-precio.validation)^2))
+netmse1
+
+
 #comparacion
-cbind(ridgemse,lassomse,netmse)
+cbind(ridgemse,lassomse,netmse,ridgemse1,lassomse1,netmse1)
 
