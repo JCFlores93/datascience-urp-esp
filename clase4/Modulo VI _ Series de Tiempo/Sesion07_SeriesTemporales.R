@@ -18,7 +18,7 @@ library(stats)    # Pruebas estadisticas
 
 
 #Leer la serie de tiempo, desde un archivo csv.
-setwd("C:/Users/Andre Chavez/Desktop/Data")
+#setwd("C:/Users/Andre Chavez/Desktop/Data")
 pbi=read.csv("pbi.csv",header = T,sep="",dec=",")
 View(pbi)
 
@@ -80,15 +80,15 @@ Tendencia_pbi<-as.double(Tendencia_pbi)
 #Viendo solo la componente tendencia, le ajuste la curva que mejor modele su
 #comportamiento o que mejor la ajuste.
 
-
+# Ajusto cualquire modelo para 
 T = length(Tendencia_pbi)
 yi = Tendencia_pbi[1:T]
 
 
 # Ajustar 4 modelos: lineal, cuadratico, cubico
-t = seq(1:T)
-t2 = t**2
-t3 = t**3
+t = seq(1:T) # Creo un termino lineal
+t2 = t**2 # Creo un termino cuadrático
+t3 = t**3 # Creo un termino cúbico
 
 # Ajuste de Polinomiales a la Componente Tendencia
 
@@ -102,7 +102,7 @@ summary(mod.cuad)
 summary(mod.cub)
 
 # Tenemos las estimaciones del modelo lineal, cuadratico y cubico
-ajust_lineal  <- mod.lin$fitted.values
+ajust_lineal  <- mod.lin$fitted.values # Estimacion de la tendencia
 ajust_cuadrado<- mod.cuad$fitted.values
 ajust_cubico  <- mod.cub$fitted.values
 
@@ -111,7 +111,11 @@ estimacion_lineal    <- ajust_lineal*Coeficientes_Estacionales
 estimacion_cuadratico<- ajust_cuadrado*Coeficientes_Estacionales
 estimacion_cubico    <- ajust_cubico*Coeficientes_Estacionales
 
+# Pronostico 
+forecast(estimacion_lineal, h = 100)
+
 # Graficamos
+# plot(forecast(estimacion_cubico,h=12),col=3)
 plot(forecast(estimacion_cubico,h=12),col=3)
 lines(pbits,col=1)
 lines(estimacion_lineal, col=1)
