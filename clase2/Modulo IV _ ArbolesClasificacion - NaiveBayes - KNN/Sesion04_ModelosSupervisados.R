@@ -625,15 +625,15 @@ tabla
 ##########################################################
 
 library(e1071)
+# Entreno el modelo de ML
 naive.B=naiveBayes(CHURN~., # Y ~ X
-                   data=)
+                   data=training)
 
 # Predecir para validar el modelo
-pred_bayes<- predict(,)
+pred_bayes<- predict(naive.B, testing) # le enviamos el 30%
 
 # Lo valido con mi matriz de consusion
-tabla=confusionMatrix(pred_bayes,
-                      ,positive = "1")
+tabla=caret::confusionMatrix(pred_bayes, testing$CHURN ,positive = "Fuga")
 
 
 
